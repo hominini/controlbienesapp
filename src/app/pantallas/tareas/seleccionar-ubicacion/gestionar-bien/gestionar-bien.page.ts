@@ -15,12 +15,12 @@ export class GestionarBienPage implements OnInit {
   fecha: any;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private router: Router,
     private servicioBienes: BienesService,
     private ubicacionesService: UbicacionesService,
 
-  ) { 
+  ) {
     this.route.queryParams.subscribe(params => {
       if (this.router.getCurrentNavigation().extras.state) {
         // llenar la variable
@@ -37,9 +37,8 @@ export class GestionarBienPage implements OnInit {
     this.obtenerFechaActual();
 
     // y guardarle en una variable ubicaciones
-    this.bienes = this.servicioBienes.traerBienes(); 
+    this.bienes = this.servicioBienes.traerBienes();
     console.log(this.bienes);
-    
   }
 
   obtenerFechaActual(){

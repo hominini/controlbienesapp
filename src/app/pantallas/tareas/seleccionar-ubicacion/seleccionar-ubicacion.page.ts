@@ -15,7 +15,7 @@ export class SeleccionarUbicacionPage implements OnInit {
     private servicioUbicaciones: UbicacionesService,
     private router: Router,
 
-  ){
+  ) {
   }
 
   // todas estas variables estan accesibles en el html
@@ -23,18 +23,15 @@ export class SeleccionarUbicacionPage implements OnInit {
 
   // este metode se va a llamar una vez que se termine de cargar la pantalla
   ngOnInit() {
-
     // y guardarle en una variable ubicaciones
-      this.ubicaciones = this.servicioUbicaciones.obtenerUbicaciones();
-      
+    this.ubicaciones = this.servicioUbicaciones.obtenerUbicaciones();
   }
 
-  irAGestionarBienes(ubicacion){
-    let navigationExtras: NavigationExtras = {
+  irAGestionarBienes(ubicacion) {
+    const navigationExtras: NavigationExtras = {
       state: {
         // aqui todo lo que se va a pasar a las sig pantalla
-        user: 1,
-        ubicacion: ubicacion,
+        ubicacion,
         // ...
       }
     };
