@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Component, OnInit } from '@angular/core';
-import { Router } from  "@angular/router";
+import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Validators, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { PasswordValidator } from '../../validadores/password.validador';
@@ -19,9 +19,9 @@ export class LoginPage implements OnInit {
 
   constructor(
     // servicio para autenticarse
-    private  authService:  AuthService, 
+    private  authService: AuthService,
     // para navegar entre pantallas
-    private  router:  Router,
+    private  router: Router,
     // validaciones
     public formBuilder: FormBuilder,
     // para mostrar alertas
@@ -45,32 +45,30 @@ export class LoginPage implements OnInit {
       password: new FormControl('', Validators.compose([
         Validators.minLength(5),
         Validators.required,
-        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]+$')
+        // Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]+$')
       ])),
     });
   }
 
 
   // loguear al usuario
-  login(formulario){
+  login(formulario) {
     // nos permite enviar datos a la API
-    this.authService.logear(formulario).subscribe((res)=>{
+    this.authService.logear(formulario.email, formulario.password).subscribe((res) => {
       this.router.navigateByUrl('caratula');
+      // muestra un mensaje de que se logueo con exito
+      this.mostrarAlert();
     });
-    
-    // muestra un mensaje de que se logueo con exito
-    this.mostrarAlert();
   }
 
-    //nos muestra un alerta al momento de ingresar  
+  // nos muestra un alerta al momento de ingresar
   async mostrarAlert() {
     const alert = await this.alertCtrl.create({
       header: 'Datos enviados!',
-      subHeader: "Información",
-      message: "Los registros fueron enviados correctamente",
+      message: 'Los registros fueron enviados correctamente',
       buttons: ['Ok']
     });
-     await alert.present();
+    await alert.present();
   }
 
 

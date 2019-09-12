@@ -4,6 +4,5 @@ export interface RespuestaLogin {
         access_token: string,
         expires_in: number,
         refresh_token: string,
-        
-    }
+    };
 }

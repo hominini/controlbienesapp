@@ -1,22 +1,27 @@
 import { Injectable } from '@angular/core';
 // imports agregados por mi
-import { HttpClient } from  '@angular/common/http';
-import { tap } from  'rxjs/operators';
-import { Observable, BehaviorSubject } from  'rxjs';
-import { Storage } from  '@ionic/storage';
-import { Usuario } from  './user';
-import { AuthRespuesta } from  './auth-respuesta';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { Storage } from '@ionic/storage';
+import { Usuario } from './user';
+import { AuthRespuesta } from './auth-respuesta';
 import { RespuestaLogin } from './respuesta-login';
+import { EnvService } from '../services/env.service';
+import { User } from '../models/user';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(private  clienteHttp:  HttpClient, private almacenamiento: Storage) { }
+  constructor(private  clienteHttp:  HttpClient, private almacenamiento: Storage, private env: EnvService) { }
 
-  NOMBRE_SERVIDOR:  string  =  'http://localhost:8000';
-  authSubject  =  new  BehaviorSubject(false);
+  NOMBRE_SERVIDOR = 'http://localhost:8000';
+  authSubject  = new BehaviorSubject(false);
+  token: any;
+  isLoggedIn = false;
 
   registrar(user: Usuario) : Observable<AuthRespuesta> {
     return this.clienteHttp.post<AuthRespuesta>(`${this.NOMBRE_SERVIDOR}/register`, user).pipe(
@@ -42,7 +47,7 @@ export class AuthService {
           await this.almacenamiento.set("ACCESS_TOKEN", resp.user.access_token);
           // alamacena la expiracion del token
           await this.almacenamiento.set("EXPIRES_IN", resp.user.expires_in);
-         
+
           // retornar
           this.authSubject.next(true);
         }
@@ -51,51 +56,77 @@ export class AuthService {
   }
 
 
-  logear(user: Usuario ) : Observable<RespuestaLogin>{
-    let datos = { 
-      username:'mario@mail.com',
-      password:'password',
-      grant_type:'password',
-      client_id:'4',
-      client_secret:'U8QwslDbb8Ivp8c6F3BDjQLXDfrkuTajH97sHTih',
+  logear(email: string, password: string ) {
+    const datos = {
+      email,
+      password,
     };
 
-    let options = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+    return this.clienteHttp.post(`${this.NOMBRE_SERVIDOR}/api/login`, datos)
+      .pipe(
+        tap( token => {
+          console.log(token);
+          // almacenar el token en el cache
+          this.almacenamiento.set('token', token)
+          .then(
+            () => {
+              console.log('Token stored:' +  token);
+              this.isLoggedIn = true;
+            },
+            error => {
+              console.error('Error storing item', error);
+            }
+          );
+
+        })
+      );
+
+  }
+
+  logout() {
+
+    const headers = new HttpHeaders({
+      Authorization: this.token['token_type'] + ' ' + this.token['access_token']
+    });
+
+    return this.clienteHttp.get(this.env.API_URL + '/api/logout', { headers })
+    .pipe(
+      tap(data => {
+        this.almacenamiento.remove('token');
+        this.isLoggedIn = false;
+        delete this.token;
+        return data;
+      })
+    )
+  }
+
+  user() {
+    const headers = new HttpHeaders({
+      Authorization: this.token['token_type'] + ' ' + this.token['access_token']
+    });
+    return this.clienteHttp.get<User>(this.env.API_URL + 'api/user', { headers })
+    .pipe(
+      tap(user => {
+        return user;
+      })
+    );
+  }
+
+  getToken() {
+    return this.almacenamiento.get('token').then(
+      data => {
+        this.token = data;
+        if (this.token != null) {
+          this.isLoggedIn = true;
+        } else {
+          this.isLoggedIn = false;
+        }
+      },
+      error => {
+        this.token = null;
+        this.isLoggedIn = false;
       }
-    };
-
-    var url = `${this.NOMBRE_SERVIDOR}/oauth/token`;
-
-    return this.clienteHttp.post<RespuestaLogin>(`${this.NOMBRE_SERVIDOR}/oauth/token`, datos, options).pipe(
-
-      tap(async (resp:  RespuestaLogin ) => {
-        // si el servidor me acepta los datos
-        alert(resp);
-        if (resp.user) {
-          // como proceso la respuesta del servidor
-          // almacenar el token en el cache 
-          await this.almacenamiento.set("ACCESS_TOKEN", resp.user.access_token);
-          // alamacena la expiracion del token
-          await this.almacenamiento.set("EXPIRES_IN", resp.user.expires_in);
-         
-          // retornar
-          this.authSubject.next(true);
-        }
-      })
     );
-
-  }
-
-  async logout() {
-    //elimina el token del cache
-    await this.almacenamiento.remove("ACCESS_TOKEN");
-    //elimina el tiempo de expirar del token 
-    await this.almacenamiento.remove("EXPIRES_IN");
-
-    // retornar
-    this.authSubject.next(false);
   }
 
   estaLogueado() {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from  '@angular/common/http';
-import { Observable, BehaviorSubject } from  'rxjs';
-import { tap } from  'rxjs/operators';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
 
 
@@ -16,7 +16,7 @@ export class UbicacionesService {
   constructor(private  clienteHttp:  HttpClient) { }
 
 
-  NOMBRE_SERVIDOR:  string  =  'http://localhost:8000/api';
+  NOMBRE_SERVIDOR = 'http://localhost:8000/api';
   authSubject  =  new  BehaviorSubject(false);
   
 
@@ -46,7 +46,6 @@ export class UbicacionesService {
       map(data => {
       // console.log(data.status);
       console.log(data); // data received by server
-      console.log("dsflkjdskdkl"); // data received by server
 
       // console.log(data.headers);
       return data;
